@@ -1,14 +1,13 @@
 import "./App.css";
-//project component
+
 import ToDoCard from "./components/Card/ToDoCard";
 // import context files
 import { ListOfContext } from "./Context/ListIfTaskContext";
-
+import { AlertShowHideProvider } from "./Context/AlertContext.jsx";
 
 //external libarary
-import { Box } from "@mui/material";
+import {  Box, } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
-// import { v4 as uuidv4 } from "uuid";
 //import react hooks
 import { useEffect, useState } from "react";
 
@@ -19,6 +18,13 @@ const theme = createTheme({
 });
 
 function App() {
+  // const [alert, setAlert] = useState({
+  //   open: false,
+  //   message: "",
+  //   severity: "success",
+  // });
+ 
+
   const [tasks, setTasks] = useState(() => {
     // Initialize state with localStorage data if it exists
     try {
@@ -30,12 +36,12 @@ function App() {
     }
   });
 
-  // Update localStorage whenever tasks change
   useEffect(() => {
     localStorage.setItem("toDoList", JSON.stringify(tasks));
   }, [tasks]);
   return (
     <ThemeProvider theme={theme}>
+   
       <Box
         sx={{
           width: "100vw",
@@ -55,7 +61,9 @@ function App() {
           }}
         >
           <ListOfContext.Provider value={{ tasks, setTasks }}>
-            <ToDoCard />
+            <AlertShowHideProvider >
+              <ToDoCard />
+            </AlertShowHideProvider>
           </ListOfContext.Provider>
         </Box>
       </Box>
