@@ -16,7 +16,8 @@ import { useContext, useEffect } from "react";
 
 import { ListOfContext } from "../../Context/ListIfTaskContext";
 import { TaskInfContext } from "../../Context/TaskInformationContext";
-import { AlertShowHideContext } from "../../Context/AlertContext";
+// import { AlertShowHideContext } from "../../Context/AlertContext";
+import { useAlertShowHide } from "../../Context/AlertContext.jsx";
 
 
 export default function Tasks() {
@@ -33,7 +34,7 @@ export default function Tasks() {
     setIdDialoug,
     setEditTask
   } = useContext(TaskInfContext);
-  const {showAlert}=useContext(AlertShowHideContext);
+  const {showAlert}=useAlertShowHide();
   const doneTask = () => {
     try {
       let newTasks = tasks.map((taskItem) => {

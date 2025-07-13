@@ -27,7 +27,7 @@ import { useContext, useEffect, useMemo, useState } from "react";
 // import context files
 import { ListOfContext } from "../../Context/ListIfTaskContext";
 import { TaskInfContext } from "../../Context/TaskInformationContext";
-import { AlertShowHideContext } from "../../Context/AlertContext";
+import { useAlertShowHide } from "../../Context/AlertContext.jsx";
 
 export default function ToDoCard() {
   const [inputAddTask, setInputAddTask] = useState("");
@@ -41,7 +41,7 @@ export default function ToDoCard() {
   const [taskText, setTaskText] = useState("");
 
   const { tasks, setTasks } = useContext(ListOfContext);
-  const { showAlert } = useContext(AlertShowHideContext);
+  const { showAlert } = useAlertShowHide();
   useEffect(() => {
     localStorage.setItem("toDoList", JSON.stringify(tasks));
   }, [tasks]);
@@ -110,7 +110,7 @@ export default function ToDoCard() {
           </TaskInfContext.Provider>
         );
       });
-  }, [tasks]);
+  }, [tasks, typeOfTasks]);
 
   // ===========handaler event===============
 
