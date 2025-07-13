@@ -1,14 +1,13 @@
 import "./App.css";
-//project component
+
 import ToDoCard from "./components/Card/ToDoCard";
 // import context files
 import { ListOfContext } from "./Context/ListIfTaskContext";
-
+import { AlertShowHideContext } from "./Context/AlertContext";
 
 //external libarary
-import { Box } from "@mui/material";
+import { Alert, Box, Snackbar } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
-// import { v4 as uuidv4 } from "uuid";
 //import react hooks
 import { useEffect, useState } from "react";
 
@@ -19,6 +18,25 @@ const theme = createTheme({
 });
 
 function App() {
+  const [alert, setAlert] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+    const showAlert = (message, severity = "success") => {
+    setAlert({
+      open: true,
+      message,
+      severity,
+    });
+  };
+   const handleCloseAlert = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setAlert({ ...alert, open: false });
+  };
+
   const [tasks, setTasks] = useState(() => {
     // Initialize state with localStorage data if it exists
     try {
@@ -36,6 +54,32 @@ function App() {
   }, [tasks]);
   return (
     <ThemeProvider theme={theme}>
+           <Snackbar
+              open={alert.open}
+              autoHideDuration={2500}
+              onClose={handleCloseAlert}
+              anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+              sx={{
+                position: "fixed",
+                left: "16px",
+                bottom: "16px",
+                zIndex: 1400, // Ensure it's above other elements
+              }}
+            >
+              <Alert
+                onClose={handleCloseAlert}
+                severity={alert.severity}
+                sx={{
+                  width: "100%",
+                  maxWidth: "300px",
+                  boxShadow: "0px 3px 5px rgba(0,0,0,0.2)",
+                  alignItems: "center",
+                }}
+                variant="filled"
+              >
+                {alert.message}
+              </Alert>
+            </Snackbar>
       <Box
         sx={{
           width: "100vw",
@@ -55,7 +99,9 @@ function App() {
           }}
         >
           <ListOfContext.Provider value={{ tasks, setTasks }}>
-            <ToDoCard />
+            <AlertShowHideContext.Provider value={{showAlert}}>
+              <ToDoCard />
+            </AlertShowHideContext.Provider>
           </ListOfContext.Provider>
         </Box>
       </Box>
