@@ -18,16 +18,16 @@ import {
 import {
   Add as AddIcon,
   Assignment as AssignmentIcon,
+  South,
 } from "@mui/icons-material";
 import Tasks from "../Task/Task";
-import { v4 as uuidv4 } from "uuid";
 
 //import react hooks
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useContext } from "react";
 // import context files
-import { ListOfContext } from "../../Context/ListIfTaskContext";
 import { TaskInfContext } from "../../Context/TaskInformationContext";
 import { useAlertShowHide } from "../../Context/AlertContext.jsx";
+import { ListOfContext } from "../../Context/ListIfTaskContext.js";
 
 export default function ToDoCard() {
   const [inputAddTask, setInputAddTask] = useState("");
@@ -39,42 +39,17 @@ export default function ToDoCard() {
 
   const [idDialoug, setIdDialoug] = useState("");
   const [taskText, setTaskText] = useState("");
+  const { tasks, dispatch } = useContext(ListOfContext);
 
-  const { tasks, setTasks } = useContext(ListOfContext);
   const { showAlert } = useAlertShowHide();
+
+  // const [curentTasks, dispatch] = useReducer(
+  //   ListOfReducer,
+  //   tasks
+  // );
   useEffect(() => {
     localStorage.setItem("toDoList", JSON.stringify(tasks));
   }, [tasks]);
-
-  // Alert states
-
-  const addTask = () => {
-    try {
-      // if (inputAddTask.trim() === "") {
-      //   showAlert("يجب إدخال  مهمة", "warning");
-      //   return;
-      // }
-
-      const taskExists = tasks.some(
-        (task) =>
-          task.task.toLowerCase().trim() === inputAddTask.toLowerCase().trim()
-      );
-
-      if (taskExists) {
-        showAlert("المهمة موجودة بالفعل", "info");
-        return;
-      }
-
-      let newTasks = [...tasks];
-      let newTask = { task: inputAddTask.trim(), isDone: false, id: uuidv4() };
-      newTasks.push(newTask);
-      setTasks(newTasks);
-      setInputAddTask("");
-      showAlert("تم إضافة المهمة بنجاح", "success");
-    } catch {
-      showAlert("حدث خطأ أثناء إضافة المهمة", "error");
-    }
-  };
 
   // Handle Enter key to add task
   const handleKeyPress = (event) => {
@@ -84,29 +59,28 @@ export default function ToDoCard() {
   };
 
   const tasksList = useMemo(() => {
+    // console.log('curent task',curentTasks);
+
     return tasks
       .filter((task) => {
         if (typeOfTasks === "done") return task.isDone;
         else if (typeOfTasks === "notDone") return !task.isDone;
-        else return task;
+        else return task.isDone || !task.isDone;
       })
       .map((task) => {
         return (
           <TaskInfContext.Provider
             key={task.id}
             value={{
-              taskInfoContext /**the correct practice send by props but i trainaing about some type of reaact hooks */:
-                task,
+              taskInfoContext: task,
               setOpenEditDialog,
               setTaskText,
               setEditTask,
               setOpenDeleteDialog,
               setIdDialoug,
             }}
-            setOpenDeleteDialog={setOpenDeleteDialog}
-            setIdDialoug={setIdDialoug}
           >
-            <Tasks />
+            <Tasks dispatch={dispatch} />
           </TaskInfContext.Provider>
         );
       });
@@ -117,55 +91,64 @@ export default function ToDoCard() {
   const handleCloseDeleteDialog = () => {
     setOpenDeleteDialog(false);
   };
-  const handleEditTask = () => {
-    try {
-      if (editTask.trim() === taskText.trim()) {
-        showAlert("لم يتم تغيير المهمة", "info");
-        return;
-      }
-
-      const taskExists = tasks.some(
-        (task) =>
-          task.id !== idDialoug && // Don't compare with itself
-          task.task.toLowerCase().trim() === editTask.toLowerCase().trim()
-      );
-
-      if (taskExists) {
-        showAlert("المهمة التي تحاول التعديل اليها موجودة بالفعل", "warning");
-        return;
-      }
-
-      let newTasks = tasks.map((task) => {
-        return task.id === idDialoug
-          ? { ...task, task: editTask.trim() }
-          : task;
-      });
-
-      setTasks(newTasks);
-      setEditTask("");
-      handleClickCloseEditDialog();
-      showAlert("تم تعديل المهمة بنجاح", "success");
-    } catch {
-      showAlert("حدث خطأ أثناء تعديل المهمة", "error");
-    }
-  };
-
   const handleClickCloseEditDialog = () => {
     setOpenEditDialog(false);
   };
-  // ===Handaler event========
 
-  const deleteTask = () => {
-    try {
-      let newTasks = tasks.filter((taskItem) => taskItem.id !== idDialoug);
-      setTasks(newTasks);
+  const addTask = () => {
+    if (inputAddTask.trim() === "") {
+      showAlert("الرجاء إدخال مهمة", "warning");
+    }
+    const taskExists = tasks.some(
+      (task) =>
+        task.task.toLowerCase().trim() === inputAddTask.toLowerCase().trim()
+    );
 
-      handleCloseDeleteDialog();
-      showAlert("تم حذف المهمة بنجاح", "success");
-    } catch {
-      showAlert("حدث خطأ أثناء حذف المهمة", "error");
+    if (taskExists) {
+      showAlert("المهمة موجودة بالفعل", "info");
+    } else {
+      dispatch({
+        type: "ADD_TASK",
+        payload: { inputAddTask },
+      });
+      setInputAddTask("");
+      showAlert("تم إضافة المهمة بنجاح", "success");
     }
   };
+  const handleEditTask = () => {
+    const taskExists = tasks.some(
+      (task) =>
+        task.id !== idDialoug && // Don't compare with itself
+        task.task.toLowerCase().trim() === editTask.toLowerCase().trim()
+    );
+    if (editTask.trim() === taskText.trim()) {
+      showAlert("لم يتم تغيير المهمة", "info");
+    } else if (taskExists) {
+      showAlert("المهمة التي تحاول التعديل اليها موجودة بالفعل", "warning");
+      return;
+    } else {
+      dispatch({
+        type: "EDIT_TASK",
+        payload: { idDialoug, editTask, taskText },
+      });
+      setOpenEditDialog(false);
+      showAlert("تم تعديل المهمة بنجاح", "success");
+      setEditTask("");
+      setTaskText("");
+    }
+  };
+
+  const deleteTask = () => {
+    dispatch({
+      type: "DELETE_TASK",
+      payload: { id: idDialoug },
+    });
+    setOpenDeleteDialog(false);
+    showAlert("تم حذف المهمة بنجاح", "success");
+  };
+
+  // ===================
+
   return (
     <Box sx={{ height: "100px", position: "relative" }}>
       <Card
@@ -412,8 +395,6 @@ export default function ToDoCard() {
         </DialogContent>
       </Dialog>
       {/*================= //Edit dialoug//======================= */}
-
-      {/* Alert Snackbar */}
     </Box>
   );
 }

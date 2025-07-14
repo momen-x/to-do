@@ -6,10 +6,11 @@ import { ListOfContext } from "./Context/ListIfTaskContext";
 import { AlertShowHideProvider } from "./Context/AlertContext.jsx";
 
 //external libarary
-import {  Box, } from "@mui/material";
+import { Box } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 //import react hooks
-import { useEffect, useState } from "react";
+import { useEffect, useReducer} from "react";
+import { ListOfReducer } from "./reducer/ListOfTask.js";
 
 const theme = createTheme({
   typography: {
@@ -18,30 +19,24 @@ const theme = createTheme({
 });
 
 function App() {
-  // const [alert, setAlert] = useState({
-  //   open: false,
-  //   message: "",
-  //   severity: "success",
-  // });
  
+ const getInitialTasks = () => {
+  try {
+    const storedTasks = localStorage.getItem("toDoList");
+    return storedTasks ? JSON.parse(storedTasks) : [];
+  } catch (error) {
+    console.error("Error parsing stored tasks", error);
+    return [];
+  }
+};
 
-  const [tasks, setTasks] = useState(() => {
-    // Initialize state with localStorage data if it exists
-    try {
-      const savedTasks = localStorage.getItem("toDoList");
-      return savedTasks ? JSON.parse(savedTasks) : [];
-    } catch (error) {
-      console.error("Failed to parse saved tasks", error);
-      return [];
-    }
-  });
+const [tasks, dispatch] = useReducer(ListOfReducer, getInitialTasks());
 
   useEffect(() => {
     localStorage.setItem("toDoList", JSON.stringify(tasks));
   }, [tasks]);
   return (
     <ThemeProvider theme={theme}>
-   
       <Box
         sx={{
           width: "100vw",
@@ -60,8 +55,8 @@ function App() {
             maxWidth: "400px",
           }}
         >
-          <ListOfContext.Provider value={{ tasks, setTasks }}>
-            <AlertShowHideProvider >
+          <ListOfContext.Provider value={{ tasks, dispatch }}>
+            <AlertShowHideProvider>
               <ToDoCard />
             </AlertShowHideProvider>
           </ListOfContext.Provider>
