@@ -1,10 +1,4 @@
-import {
-  Box,
-  IconButton,
-  Paper,
-  Typography,
-
-} from "@mui/material";
+import { Box, IconButton, Paper, Typography } from "@mui/material";
 
 import {
   Edit as EditIcon,
@@ -16,12 +10,12 @@ import { useContext, useEffect } from "react";
 
 import { ListOfContext } from "../../Context/ListIfTaskContext";
 import { TaskInfContext } from "../../Context/TaskInformationContext";
-// import { AlertShowHideContext } from "../../Context/AlertContext";
-import { useAlertShowHide } from "../../Context/AlertContext.jsx";
-
+import { useAlertShowHide } from "../../Context/AlertContext";
 
 export default function Tasks() {
-  const { tasks, setTasks } = useContext(ListOfContext);
+  const { showAlert } = useAlertShowHide();
+
+  const { tasks, dispatch } = useContext(ListOfContext);
   useEffect(() => {
     localStorage.setItem("toDoList", JSON.stringify(tasks));
   }, [tasks]);
@@ -32,25 +26,18 @@ export default function Tasks() {
     setOpenEditDialog,
     setTaskText,
     setIdDialoug,
-    setEditTask
+    setEditTask,
   } = useContext(TaskInfContext);
-  const {showAlert}=useAlertShowHide();
+
   const doneTask = () => {
-    try {
-      let newTasks = tasks.map((taskItem) => {
-        return taskItem.id === taskInfoContext.id
-          ? { ...taskItem, isDone: !taskItem.isDone }
-          : taskItem;
-      });
-      setTasks(newTasks);
-
-      const status = !taskInfoContext.isDone ? "مكتملة" : "غير مكتملة";
-      showAlert(`تم تحديث حالة المهمة إلى ${status}`, "success");
-    } catch {
-      showAlert("حدث خطأ أثناء تحديث حالة المهمة", "error");
-    }
+    const id = taskInfoContext.id;
+    dispatch({
+      type: "TOGGLE_TASK",
+      payload: { id },
+    });
+    let doneOrNot = taskInfoContext.isDone ? "غير مكتملة" : "مكتملة";
+    showAlert(`تم تحديث هذه المهمة الى ${doneOrNot}`, "success");
   };
-
   return (
     <Box sx={{ mb: 3, boxShadow: "inset red 2cap" }}>
       <Paper
@@ -110,8 +97,8 @@ export default function Tasks() {
                 e.stopPropagation();
                 setOpenEditDialog(true);
                 setIdDialoug(taskInfoContext.id);
-                  setTaskText(taskInfoContext.task);
-                  setEditTask(taskInfoContext.task);
+                setTaskText(taskInfoContext.task);
+                setEditTask(taskInfoContext.task);
               }}
               size="small"
               sx={{
