@@ -1,8 +1,6 @@
-// import { useAlertShowHide } from "../Context/AlertContext";
 import { v4 as uuidv4 } from "uuid";
 
 export function ListOfReducer(tasks, action) {
-  // const { showAlert } = useAlertShowHide();
   switch (action.type) {
     case "ADD_TASK":
       try {
@@ -49,5 +47,13 @@ export function ListOfReducer(tasks, action) {
         // showAlert("حدث خطأ أثناء تحديث حالة المهمة", "error");
         return tasks;
       }
+      case 'GET_TASKS':
+        try {
+          const storedTasks = JSON.parse(localStorage.getItem("toDoList")) || [];
+          return storedTasks;
+        } catch (error) {
+          console.error("Failed to retrieve tasks from localStorage", error);
+          return tasks;
+        }
   }
 }

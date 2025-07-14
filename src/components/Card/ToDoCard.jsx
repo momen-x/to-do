@@ -23,11 +23,11 @@ import {
 import Tasks from "../Task/Task";
 
 //import react hooks
-import { useEffect, useMemo, useState, useContext } from "react";
+import { useEffect, useMemo, useState } from "react";
 // import context files
 import { TaskInfContext } from "../../Context/TaskInformationContext";
 import { useAlertShowHide } from "../../Context/AlertContext.jsx";
-import { ListOfContext } from "../../Context/ListIfTaskContext.js";
+import { useListOfTask } from "../../Context/ListIfTaskContext.jsx";
 
 export default function ToDoCard() {
   const [inputAddTask, setInputAddTask] = useState("");
@@ -39,8 +39,7 @@ export default function ToDoCard() {
 
   const [idDialoug, setIdDialoug] = useState("");
   const [taskText, setTaskText] = useState("");
-  const { tasks, dispatch } = useContext(ListOfContext);
-
+  const { tasks, dispatch } = useListOfTask();
   const { showAlert } = useAlertShowHide();
 
   // const [curentTasks, dispatch] = useReducer(
@@ -48,8 +47,11 @@ export default function ToDoCard() {
   //   tasks
   // );
   useEffect(() => {
-    localStorage.setItem("toDoList", JSON.stringify(tasks));
-  }, [tasks]);
+    dispatch({
+      type: "GET_TASKS",
+      payload: {},
+    });
+  }, [tasks, dispatch]);
 
   // Handle Enter key to add task
   const handleKeyPress = (event) => {

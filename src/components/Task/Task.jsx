@@ -8,17 +8,20 @@ import {
 
 import { useContext, useEffect } from "react";
 
-import { ListOfContext } from "../../Context/ListIfTaskContext";
+import { useListOfTask } from "../../Context/ListIfTaskContext.jsx";
 import { TaskInfContext } from "../../Context/TaskInformationContext";
 import { useAlertShowHide } from "../../Context/AlertContext";
 
 export default function Tasks() {
   const { showAlert } = useAlertShowHide();
 
-  const { tasks, dispatch } = useContext(ListOfContext);
+  const { tasks, dispatch } = useListOfTask();
   useEffect(() => {
-    localStorage.setItem("toDoList", JSON.stringify(tasks));
-  }, [tasks]);
+    dispatch({
+      type: "GET_TASKS",
+      payload: {},
+    });
+  }, [tasks,dispatch]);
 
   const {
     taskInfoContext,
